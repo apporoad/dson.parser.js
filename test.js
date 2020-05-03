@@ -18,7 +18,7 @@ it('test easy stringify', async () => {
     expect(options.functionMap['fun']).toBe(json.fun)
 })
 
-it2('test stringify' , async()=>{
+it('test stringify' , async()=>{
     var fm = {
         m1 : ()=> { return 1},
         m2 : () =>{return 2},
@@ -58,3 +58,37 @@ it2('test stringify' , async()=>{
 
 
 
+it2('test parse' , async () =>{
+     var json = {
+        hello : 'good good day',
+        fn : ()=>{}
+     }
+     var options = {}
+     var nj =  await paser.parse( await paser.stringify(json,options) , options)
+
+     expect(json.fn == nj.fn && nj.hello == 'good good day').toBe(true)
+
+     var testJson = {
+         name : 'LiSA',
+         profile : {
+             job : 'sing',
+             goodat : [
+                 'shirushi' , 'ADAMAS','ash'
+             ]
+         }
+     }
+     var dson = d().get('profile.goodat[2]').mark('ash').root().get('name').mark('name').format({
+         name : '${name}',
+         goodat : '${ash}'
+     } , { ash : 'it is ash'}).mark('format')
+     .root().select(data=>{ return data.goodat}).test("='it is ash'").goto('name')
+
+     expect(await dson.doTest(testJson)).toBe(false)
+     expect(await dson.doDraw(testJson)).toBe('LiSA')
+
+     var options2= {}
+     var nDson = await paser.parse( await paser.stringify(dson,options2), options2)
+
+     expect(await nDson.doTest(testJson)).toBe(false)
+     expect(await nDson.doDraw(testJson)).toBe('LiSA')
+})
