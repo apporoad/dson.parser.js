@@ -35,20 +35,26 @@ it2('test stringify' , async()=>{
         m5 : /adf/g,
         d : d().get({ hello : 1 , hello1 : ()=>{}}).mark('m1').get(()=>{})
     }
-    var options = {initFunctionMap : fm}
+    var options = {initFunctionMap : fm , functionMap : { abc : fm.m4}}
     var string = await paser.stringify(json,options)
-
     var nj = JSON.parse(string)
-
     expect(nj.c1).toBe('[[m1]]')
     expect(nj.c6).toBe('[[c6]]')
-
-    //todo   正则在set中存在问题，需要在 dson中处理掉
-    expect(nj.m5).toBe('[[auto1]]')
-
+    expect(nj.m5).toBe('[[auto2]]')
+    expect(nj.c4).toBe('[[abc]]')
     expect(options.functionMap.m5).toBe(fm.m5)
-
     expect(nj.d.isRawDSON).toBe(true)
-    expect(nj.d._queue.lenght).toBe(3)
+    expect(nj.d._queue.length).toBe(3)
 
+    var string2 = await paser.stringify(d().select(fm.m1).mark('hello').format({ hello : fm.m3}).expect(d().select({ yes : 'your highness'})).test(j('>2')) , options)
+    var nj2 = JSON.parse(string2)
+
+    expect(nj2._queue[0].params[0]).toBe('[[m1]]')
+
+    expect(nj2._queue[3].params[0].isRawDSON).toBe(true)
+
+    expect(nj2._queue[4].params[0].isRawJVD).toBe(true)
 })
+
+
+

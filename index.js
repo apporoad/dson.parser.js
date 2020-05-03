@@ -10,7 +10,8 @@ var innerGetFunctionMark = ( obj ,initMap, tgtFunctionMap) =>{
         }
     }
     for(var key in initMap){
-        if(initMap[key] == obj.value){
+        //目标fm 中必须没有该key , 防止被覆盖问题   / /todo 是否需要提醒重复情况
+        if(initMap[key] == obj.value && !tgtFunctionMap[key]){
             tgtFunctionMap[key] = obj.value
             return `[[${key}]]`
         }
@@ -68,11 +69,62 @@ var rawify =   async (dson , options)=>{
             return (uType.isObject(value) && ( uType.isFunction(value.isDSON) && value.isDSON()  || uType.isFunction(value.isJVD) &&  value.isJVD()))
         },null , async (data)=>{
             return  await rawify(data.value,options)
-        }).debug(
-            (data,context)=>{
-                var c1 = 1
+        })
+        .set((key,value)=>{
+            return uType.isFunction(value) || uType.isAsyncFunction(value) || uType.isRegExp(value)
+        } ,null , data=>{
+            return innerGetFunctionMark(data,options.initFunctionMap,options.functionMap)
+        })
+        .doDraw(dson)
+    }
+    return rawDson
+}
+
+
+var jsonify =   async (json , options)=>{
+    options  = options || {}
+    options.functionMap = options.functionMap || {}
+    var dson = json
+
+    //todos 
+    if(uType.isObject(dson) && (uType.isFunction(dson.isDSON) && dson.isDSON()  || uType.isFunction(dson.isJVD) && dson.isJVD() )){
+        /*{
+                            item: itemName,
+                            params: args,
+                            type: 'dson'
+                        })*/
+        rawDson = await d('_queue')
+        .set((key,value)=>{
+            return (uType.isObject(value) && ( uType.isFunction(value.isDSON) && value.isDSON()  || uType.isFunction(value.isJVD) &&  value.isJVD()))
+        },null , async (data)=>{
+            return  await rawify(data.value,options)
+        })
+        .set((key,value)=>{
+            return uType.isFunction(value) || uType.isAsyncFunction(value) || uType.isRegExp(value)
+        } ,null , data=>{
+            return innerGetFunctionMark(data,options.initFunctionMap,options.functionMap)
+        })
+        .mark('q').select((data, context)=>{
+            if(uType.isFunction(dson.isDSON) && dson.isDSON()){
+                return {
+                    isRawDSON :true,
+                    _queue : data
+                }
             }
-        )
+            else{
+                return {
+                    isRawJVD : true,
+                    _queue : data
+                }
+            }
+        }).doDraw(dson)
+    }else if(uType.isObject(dson) || uType.isArray(dson)){
+        rawDson = await d()
+        .set((key,value)=>{
+            return (uType.isObject(value) && ( uType.isFunction(value.isDSON) && value.isDSON()  || uType.isFunction(value.isJVD) &&  value.isJVD()))
+        },null , async (data)=>{
+            return  await rawify(data.value,options)
+        })
         .set((key,value)=>{
             return uType.isFunction(value) || uType.isAsyncFunction(value) || uType.isRegExp(value)
         } ,null , data=>{
@@ -87,6 +139,6 @@ exports.stringify = async (dson , options)=>{
     return  JSON.stringify (await rawify (dson,options))
 }
 
-exports.parse = async (dsonString)=>{
-
+exports.parse = async (dsonString, options)=>{
+    return await jsonify(JSON.parse(dsonString , options))
 }
