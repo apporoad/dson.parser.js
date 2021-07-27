@@ -24,6 +24,11 @@ parser.stringify(d(),options).then(str=>{
 
 ```
 
+## support encypt (aes)
+```js
+var en = await paser.en( 'abc',dson,options2)
+var nDson = await paser.de( 'abc',en, options2)
+```
 
 ## 如何打包
 

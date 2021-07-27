@@ -92,3 +92,42 @@ it2('test parse' , async () =>{
      expect(await nDson.doTest(testJson)).toBe(false)
      expect(await nDson.doDraw(testJson)).toBe('LiSA')
 })
+
+
+
+it2('test encypt' , async () =>{
+    var json = {
+       hello : 'good good day',
+       fn : ()=>{}
+    }
+    var options = {}
+    var nj =  await paser.parse( await paser.stringify(json,options) , options)
+
+    expect(json.fn == nj.fn && nj.hello == 'good good day').toBe(true)
+
+    var testJson = {
+        name : 'LiSA',
+        profile : {
+            job : 'sing',
+            goodat : [
+                'shirushi' , 'ADAMAS','ash'
+            ]
+        }
+    }
+    var dson = d().get('profile.goodat[2]').mark('ash').root().get('name').mark('name').format({
+        name : '${name}',
+        goodat : '${ash}'
+    } , { ash : 'it is ash'}).mark('format')
+    .root().select(data=>{ return data.goodat}).test("='it is ash'").goto('name')
+
+    expect(await dson.doTest(testJson)).toBe(false)
+    expect(await dson.doDraw(testJson)).toBe('LiSA')
+
+    var options2= {}
+    var en = await paser.en( 'abc',dson,options2)
+    console.log(en)
+    var nDson = await paser.de( 'abc',en, options2)
+
+    expect(await nDson.doTest(testJson)).toBe(false)
+    expect(await nDson.doDraw(testJson)).toBe('LiSA')
+})

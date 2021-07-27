@@ -1,5 +1,6 @@
 var d = require('dson.js').DSON
 var utils = require('lisa.utils')
+var aes = require('lisa.aes.js')
 var uType = utils.Type
 
 
@@ -126,4 +127,24 @@ exports.stringify = async (dson, options) => {
 
 exports.parse = async (dsonString, options) => {
     return await jsonify(JSON.parse(dsonString), options)
+}
+
+
+
+
+exports.en = exports.encryption = async (pwd ,dson,options) =>{
+    var str = await exports.stringify(dson, options)
+    if(pwd){
+        return aes.en(pwd, str)
+    }
+    return str
+}
+
+exports.de = exports.decrypt = async(pwd, str , options)=>{
+    var content = str
+    if(pwd){
+        content =  aes.de(pwd, str)
+    }
+    var json = await exports.parse(content,options)
+    return json
 }
