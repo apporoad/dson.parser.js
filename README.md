@@ -12,9 +12,23 @@ var dson = require('dson.js').DSON
 
 //stringify  your dson
 var options = {}
-var string = parser.stringify(d(),options)
+parser.stringify(d(),options).then(str=>{
+    console.log(str)
 
-// parse it
-var yourDson = parser.parse(string,options)
+    // parse it
+    parser.parse(str,options).then(d=>{
 
+    })
+})
+
+
+```
+
+
+## 如何打包
+
+```bash
+npm i -g browserify
+
+browserify -r ./index.js:dson.parser.js -o build/dson.parser.js
 ```
